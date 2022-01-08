@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+# =========================================================
+
+# === Flags ===
+KEEP=0
+
+# === Global vars ===
+
+
+# === Constants ===
+# = Links =
+DARKNET_DIARIES_HOST="https://darknetdiaries.com/"
+EPISODE_NUMBER_PATTERN="EPISODE_NUMBER"
+EPISODE_API="episode/$EPISODE_NUMBER_PATTERN/"
+EPISODE_TITLE="darknet-diaries-$EPISODE_NUMBER_PATTERN.mp3"
+
+# = Colors =
+GREEN='\033[32;01m'
+YELLOW='\033[33;01m'
+RED='\033[1;31m'
+BLUE='\033[34;01m'
+PURPLE='\033[35m'
+TEXT='\033[0m'
+
+
+# =========================================================
+
+
+usage() {
+	echo "usage"
+	# --play --keep
+}
+
+getArgs() {
+	echo "test"
+}
+
+cleanup() {
+	[ $KEEP == 0 ] && [ -n "$LAST_FILENAME_DOWNLOADED" ] && rm $LAST_FILENAME_DOWNLOADED
+}
+
+interrupt() {
+	printf "${YELLOW}Script interrupted...${TEXT}"
+	cleanup
+	exit 1
+}
+
+# $1 = episode number
+# $2 = output filename path [OPTIONAL]
+downloadEpisode() {
+
+	local ep=$1
+	local api=${EPISODE_API//$EPISODE_NUMBER_PATTERN/$ep}
+	local filename=${2:-${EPISODE_TITLE//$EPISODE_NUMBER_PATTERN/$ep}}
+
+	local link=$(wget -q --output-document - "$DARKNET_DIARIES_HOST$api" | grep -oP -- "https://.+.mp3" -)
+
+	if [ ! -f "$filename" ]; then
+
+		printf "${YELLOW}Downloading ${PURPLE}episode $ep${YELLOW} and saving to ${PURPLE}$filename${YELLOW}...${TEXT}\n"
+		wget -q --output-document "$filename" "$link"
+
+		[ $? == 1 ] && printf "${RED}Download of episode $ep failed unexpectedly!${TEXT}\n" && return 1
+
+		printf "${GREEN}Successfully downloaded ${PURPLE}episode $ep${GREEN} to ${PURPLE}$filename${TEXT}\n"
+		LAST_FILENAME_DOWNLOADED=$filename
+		return 0
+
+	fi
+
+	printf "${YELLOW}Episode already downloaded...${TEXT}\n"
+	return 0
+}
+
+# $1 = path to episode
+playEpisode() {
+
+	local path=$1
+
+	[ -f "$path" ] && mpv --no-video "$path" && return 0
+
+	printf "${RED}Episode not found at path: ${YELLOW}$path${TEXT}\n"
+	return 1
+
+}
+
+trap interrupt SIGINT
+
+#playEpisode "darknet-diaries-23.mp3"
+
+downloadEpisode 23
+cleanup

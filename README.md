@@ -2,7 +2,7 @@
 
 A Bash tool to download and play episodes of Jack Rhysider's podcast, Darknet Diaries, at the command line.
 
-Check out the [Jack's website](https://darknetdiaries.com/).
+Check out [Jack's website](https://darknetdiaries.com/).
 
 Support him on [his Patreon](https://www.patreon.com/darknetdiaries) if you like the podcast!
 

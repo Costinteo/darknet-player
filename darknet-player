@@ -106,10 +106,10 @@ getArgs() {
 
 checkReqs() {
 	wget --version 1>/dev/null 2>&1
-	[ $? == 1 ] && printf "${RED}wget is not installed...${TEXT}\n" && exit 1
+	[ $? != 0 ] && printf "${RED}wget is not installed...${TEXT}\n" && exit 1
 
 	mpv --version 1>/dev/null 2>&1
-	[ $? == 1 ] && printf "${RED}mpv is not installed...${TEXT}\n" && exit 1
+	[ $? != 0 ] && printf "${RED}mpv is not installed...${TEXT}\n" && exit 1
 
 }
 

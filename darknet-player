@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
-# =========================================================
-
-# === Flags ===
+# === CLI Arguments ===
 KEEP=0
+USAGE=0
+LICENSE=0
+COLOR=1
+VERBOSE=0
+EPISODE=0
 
 # === Global vars ===
-
+LAST_FILENAME_DOWNLOADED=""
 
 # === Constants ===
 # = Links =
@@ -28,12 +31,92 @@ TEXT='\033[0m'
 
 
 usage() {
-	echo "usage"
-	# --play --keep
+	cat <<- _end_of_usage
+	Usage: darknet-player [OPTIONS]...
+	Download and play Darknet Diaries episodes in the terminal.
+
+	Options:
+	    -h, --help               print this text and exit
+	        --license            print license and exit
+	        --no-color           suppress colored output
+	    -p, --play <EP>          download & play episode <EP>
+	    -k, --keep               don't remove episode after playing
+
+	Darknet Diaries is made by Jack Rhysider. <https://darknetdiaries.com/>
+	The script is written by Costinteo. <https://github.com/Costinteo>
+	Licensed under GNU GPL v3. <https://www.gnu.org/licenses/gpl-3.0.en.html>
+	_end_of_usage
+
+	cleanup
+	exit 0
+}
+
+license() {
+	cat LICENSE
+	cleanup
+	exit 0
 }
 
 getArgs() {
-	echo "test"
+	
+	[ $# == 0 ] && usage
+
+	while [ $# != 0 ]
+	do
+		case "$1" in
+		"-h"|"--help")
+			USAGE=1
+			;;
+
+		"--license")
+			LICENSE=1
+			;;
+
+		"--no-color")
+			COLOR=0
+			;;
+		"-p"|"--play")
+			local numeric='^[0-9]+$'
+			[[ ! "$2" =~ $numeric ]] && usageError "Invalid episode number!"
+			EPISODE=$2
+			shift
+			;;
+		"-k"|"--keep")
+			KEEP=1
+			;;
+		*)
+			usageError "Unkown argument!"
+			;;
+		esac
+		shift
+	done
+}
+
+checkReqs() {
+	wget --version 1>/dev/null 2>&1
+	[ $? == 1 ] && printf "${RED}wget is not installed...${TEXT}\n" && exit 1
+
+	mpv --version 1>/dev/null 2>&1
+	[ $? == 1 ] && printf "${RED}mpv is not installed...${TEXT}\n" && exit 1
+
+}
+
+suppressColors() {
+	GREEN=''
+	YELLOW=''
+	RED=''
+	BLUE=''
+	PURPLE=''
+	TEXT=''
+}
+
+# prints usage error message in red and exits
+# used when parsing args
+usageError() {
+
+	local msg=$1
+	printf "${RED}$msg${TEXT} See --help for usage.\n"
+	exit 1
 }
 
 cleanup() {
@@ -41,7 +124,7 @@ cleanup() {
 }
 
 interrupt() {
-	printf "${YELLOW}Script interrupted...${TEXT}"
+	printf "\n${YELLOW}Script interrupted...${TEXT}\n"
 	cleanup
 	exit 1
 }
@@ -85,9 +168,25 @@ playEpisode() {
 
 }
 
+# does all the magic
+darknetPlayer() {
+	
+	[ $USAGE == 1 ] && usage
+	[ $LICENSE == 1 ] && license
+	[ $COLOR == 0 ] && suppressColors
+
+	local filename=${EPISODE_TITLE//$EPISODE_NUMBER_PATTERN/$EPISODE}
+
+	[ ! -f "$filename" ] && downloadEpisode $EPISODE
+	playEpisode $filename
+}
+
+# =========================================================
+# === MAIN ===
+
 trap interrupt SIGINT
 
-#playEpisode "darknet-diaries-23.mp3"
-
-downloadEpisode 23
+checkReqs
+getArgs "$@"
+darknetPlayer
 cleanup

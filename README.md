@@ -29,6 +29,27 @@ $ cp darknet-player /usr/local/bin/
 $ echo $PATH
 ```
 
+## Usage
+
+Runing ``$ darknet-player -h`` will print out this usage text:
+
+
+```
+Usage: darknet-player [OPTIONS]...
+Download and play Darknet Diaries episodes in the terminal.
+
+Options:
+    -h, --help               print this text and exit
+        --license            print license and exit
+        --no-color           suppress colored output
+    -p, --play <EP>          download & play episode <EP>
+    -k, --keep               don't remove episode after playing
+
+Darknet Diaries is made by Jack Rhysider. <https://darknetdiaries.com/>
+The script is written by Costinteo. <https://github.com/Costinteo>
+Licensed under GNU GPL v3. <https://www.gnu.org/licenses/gpl-3.0.en.html>
+```
+
 ## Contributing
 
 Open issues for bug-fixing or even pull requests if you want to fix them yourself. :)

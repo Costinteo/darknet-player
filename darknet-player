@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+# ==================== Darknet Player =====================
+# Bash script to download and play Darknet Diaries episodes
+# 
+# Darknet Diaries created by Jack Rhysider 
+# Website: https://darknetdiaries.com/
+#
+# Script author: Costinteo
+# Github: https://github.com/Costinteo
+# License: GNU GPL v3. 
+# Link: https://www.gnu.org/licenses/gpl-3.0.en.html
+# =========================================================
+
 # === CLI Arguments ===
 KEEP=0
 USAGE=0

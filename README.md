@@ -31,7 +31,7 @@ $ echo $PATH
 
 ## Usage
 
-Runing ``$ darknet-player -h`` will print out this usage text:
+Running ``$ darknet-player -h`` will print out this usage text:
 
 
 ```

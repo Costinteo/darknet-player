@@ -24,13 +24,10 @@ Firstly, make sure all the above dependencies are installed. Afterwards, at the 
 $ git clone https://github.com/Costinteo/darknet-player.git
 $ cd darknet-player
 $ sudo cp darknet-player /usr/local/bin/
-# you can change the destination (/usr/local/bin) to any place on PATH
-# to check path use:
-$ echo $PATH
-
-# you might also need to make it executable
 $ sudo chmod 755 /usr/local/bin/darknet-player
 ```
+
+You can change the destination (/usr/local/bin) to any place on PATH. Check PATH using ``$ echo $PATH``.
 
 ## Usage
 

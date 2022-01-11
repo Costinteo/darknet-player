@@ -47,7 +47,7 @@ Options:
 
 Darknet Diaries is made by Jack Rhysider. <https://darknetdiaries.com/>
 The script is written by Costinteo. <https://github.com/Costinteo>
-Licensed under GNU GPL v3. <https://www.gnu.org/licenses/gpl-3.0.en.html>
+Licensed under GNU GPL v3. <https://www.gnu.org/licenses/gpl-3.0.txt>
 ```
 
 ## Contributing

@@ -9,7 +9,7 @@
 # Script author: Costinteo
 # Github: https://github.com/Costinteo
 # License: GNU GPL v3. 
-# Link: https://www.gnu.org/licenses/gpl-3.0.en.html
+# Link: https://www.gnu.org/licenses/gpl-3.0.txt
 # =========================================================
 
 # === CLI Arguments ===
@@ -21,14 +21,15 @@ VERBOSE=0
 EPISODE=0
 
 # === Global vars ===
-LAST_FILENAME_DOWNLOADED=""
+FILENAME_TO_PLAY=""
+FOUND=0
 
 # === Constants ===
 # = Links =
-DARKNET_DIARIES_HOST="https://darknetdiaries.com/"
-EPISODE_NUMBER_PATTERN="EPISODE_NUMBER"
-EPISODE_API="episode/$EPISODE_NUMBER_PATTERN/"
-EPISODE_TITLE="darknet-diaries-$EPISODE_NUMBER_PATTERN.mp3"
+ALL_EPISODES_LIST="https://darknetdiaries.com/darknet-diaries-all-episode-links.txt"
+EPISODE_TITLE_PATTERN="darknet-diaries-ep%NUM%-[a-zA-Z0-9\-\_]+\.mp3"
+
+LICENSE_LINK="https://www.gnu.org/licenses/gpl-3.0.txt"
 
 # = Colors =
 GREEN='\033[32;01m'
@@ -56,15 +57,19 @@ usage() {
 
 	Darknet Diaries is made by Jack Rhysider. <https://darknetdiaries.com/>
 	The script is written by Costinteo. <https://github.com/Costinteo>
-	Licensed under GNU GPL v3. <https://www.gnu.org/licenses/gpl-3.0.en.html>
+	Licensed under GNU GPL v3. <$LICENSE_LINK>
 	_end_of_usage
 
 	cleanup
 	exit 0
 }
 
+# always grabs license from the internet
 license() {
-	cat LICENSE
+	wget -q --output-document - "$LICENSE_LINK"
+
+	[ $? != 0 ] && printf "${RED}License couldn't be fetched! Check internet connection...${TEXT}\n"
+
 	cleanup
 	exit 0
 }
@@ -132,7 +137,7 @@ usageError() {
 }
 
 cleanup() {
-	[ $KEEP == 0 ] && [ -n "$LAST_FILENAME_DOWNLOADED" ] && rm $LAST_FILENAME_DOWNLOADED
+	[ $KEEP == 0 ] && [ $FOUND == 0 ] && [ -n "$FILENAME_TO_PLAY" ] && rm "$FILENAME_TO_PLAY"
 }
 
 interrupt() {
@@ -146,10 +151,12 @@ interrupt() {
 downloadEpisode() {
 
 	local ep=$1
-	local api=${EPISODE_API//$EPISODE_NUMBER_PATTERN/$ep}
-	local filename=${2:-${EPISODE_TITLE//$EPISODE_NUMBER_PATTERN/$ep}}
+	local episodeList=$(wget -q --output-document - $ALL_EPISODES_LIST)
+	local filename=${2:-$(echo "$episodeList" | grep -oP -- "${EPISODE_TITLE_PATTERN//%NUM%/$ep}")}
 
-	local link=$(wget -q --output-document - "$DARKNET_DIARIES_HOST$api" | grep -oP -- "https://.+.mp3" -)
+	local link=$(echo "$episodeList" | grep -- "$filename")
+
+	[ -z "$filename" ] && printf "${RED}Episode $ep doesn't exist!${TEXT}\n" && return 1
 
 	if [ ! -f "$filename" ]; then
 
@@ -159,12 +166,14 @@ downloadEpisode() {
 		[ $? == 1 ] && printf "${RED}Download of episode $ep failed unexpectedly!${TEXT}\n" && return 1
 
 		printf "${GREEN}Successfully downloaded ${PURPLE}episode $ep${GREEN} to ${PURPLE}$filename${TEXT}\n"
-		LAST_FILENAME_DOWNLOADED=$filename
-		return 0
+	else
+
+		FOUND=1
+		printf "${YELLOW}Episode already downloaded...${TEXT}\n"
 
 	fi
-
-	printf "${YELLOW}Episode already downloaded...${TEXT}\n"
+	
+	FILENAME_TO_PLAY=$filename
 	return 0
 }
 
@@ -187,10 +196,8 @@ darknetPlayer() {
 	[ $LICENSE == 1 ] && license
 	[ $COLOR == 0 ] && suppressColors
 
-	local filename=${EPISODE_TITLE//$EPISODE_NUMBER_PATTERN/$EPISODE}
-
-	[ ! -f "$filename" ] && downloadEpisode $EPISODE
-	playEpisode $filename
+	[ ! -f "$filename" ] && downloadEpisode "$EPISODE"
+	[ $? == 0 ] && playEpisode "$FILENAME_TO_PLAY"
 }
 
 # =========================================================

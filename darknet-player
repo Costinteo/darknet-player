@@ -68,7 +68,7 @@ usage() {
 license() {
 	wget -q --output-document - "$LICENSE_LINK"
 
-	[ $? != 0 ] && printf "${RED}License couldn't be fetched! Check internet connection...${TEXT}\n"
+	[ $? -ne 0 ] && printf "${RED}License couldn't be fetched! Check internet connection...${TEXT}\n"
 
 	cleanup
 	exit 0
@@ -76,9 +76,9 @@ license() {
 
 getArgs() {
 	
-	[ $# == 0 ] && usage
+	[ $# -eq 0 ] && usage
 
-	while [ $# != 0 ]
+	while [ $# -ne 0 ]
 	do
 		case "$1" in
 		"-h"|"--help")
@@ -110,11 +110,14 @@ getArgs() {
 }
 
 checkReqs() {
+	grep --version 1>/dev/null 2>&1
+	[ $? -ne 0 ] && printf "${RED}grep is not installed...${TEXT}\n" && exit 1
+	
 	wget --version 1>/dev/null 2>&1
-	[ $? != 0 ] && printf "${RED}wget is not installed...${TEXT}\n" && exit 1
+	[ $? -ne 0 ] && printf "${RED}wget is not installed...${TEXT}\n" && exit 1
 
 	mpv --version 1>/dev/null 2>&1
-	[ $? != 0 ] && printf "${RED}mpv is not installed...${TEXT}\n" && exit 1
+	[ $? -ne 0 ] && printf "${RED}mpv is not installed...${TEXT}\n" && exit 1
 
 }
 
@@ -137,7 +140,7 @@ usageError() {
 }
 
 cleanup() {
-	[ $KEEP == 0 ] && [ $FOUND == 0 ] && [ -n "$FILENAME_TO_PLAY" ] && rm "$FILENAME_TO_PLAY"
+	[ $KEEP -eq 0 ] && [ $FOUND -eq 0 ] && [ -f "$FILENAME_TO_PLAY" ] && rm "$FILENAME_TO_PLAY"
 }
 
 interrupt() {
@@ -158,12 +161,14 @@ downloadEpisode() {
 
 	[ -z "$filename" ] && printf "${RED}Episode $ep doesn't exist!${TEXT}\n" && return 1
 
+	FILENAME_TO_PLAY=$filename
+
 	if [ ! -f "$filename" ]; then
 
 		printf "${YELLOW}Downloading ${PURPLE}episode $ep${YELLOW} and saving to ${PURPLE}$filename${YELLOW}...${TEXT}\n"
 		wget -q --output-document "$filename" "$link"
 
-		[ $? == 1 ] && printf "${RED}Download of episode $ep failed unexpectedly!${TEXT}\n" && return 1
+		[ $? -eq 1 ] && printf "${RED}Download of episode $ep failed unexpectedly!${TEXT}\n" && return 1
 
 		printf "${GREEN}Successfully downloaded ${PURPLE}episode $ep${GREEN} to ${PURPLE}$filename${TEXT}\n"
 	else
@@ -173,7 +178,7 @@ downloadEpisode() {
 
 	fi
 	
-	FILENAME_TO_PLAY=$filename
+
 	return 0
 }
 
@@ -192,12 +197,12 @@ playEpisode() {
 # does all the magic
 darknetPlayer() {
 	
-	[ $USAGE == 1 ] && usage
-	[ $LICENSE == 1 ] && license
-	[ $COLOR == 0 ] && suppressColors
+	[ $USAGE -eq 1 ] && usage
+	[ $LICENSE -eq 1 ] && license
+	[ $COLOR -eq 0 ] && suppressColors
 
 	[ ! -f "$filename" ] && downloadEpisode "$EPISODE"
-	[ $? == 0 ] && playEpisode "$FILENAME_TO_PLAY"
+	[ $? -eq 0 ] && playEpisode "$FILENAME_TO_PLAY"
 }
 
 # =========================================================
